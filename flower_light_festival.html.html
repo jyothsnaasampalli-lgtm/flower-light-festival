@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Flower Light Festival</title>
+<style>
+  :root {
+    --bg: #10121b;
+    --panel: #191c29;
+    --panel-2: #202434;
+    --line: rgba(255,255,255,.09);
+    --muted: #a8aec2;
+    --text: #f7f4f0;
+    --gold: #f4c56b;
+    --pink: #ff78bc;
+    --led: #ffb84e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--text);
+    background: radial-gradient(ellipse at 50% -15%, #352346 0%, #171827 43%, var(--bg) 78%);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  button, select { font: inherit; }
+  button { cursor: pointer; }
+  .app { max-width: 1440px; margin: 0 auto; padding: 24px; }
+  .topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px; }
+  .brand { display:flex; align-items:center; gap:13px; }
+  .brand-mark { width:48px; height:48px; border-radius:16px; display:grid; place-items:center; font-size:26px; background:linear-gradient(145deg,#ffdc8a,#eb7da9 65%,#8c68e9); box-shadow:0 8px 28px #d8847a30; }
+  h1 { font-size:clamp(22px,3vw,30px); line-height:1.1; margin:0; letter-spacing:-.7px; }
+  .eyebrow { text-transform:uppercase; letter-spacing:2.2px; color:var(--gold); font-size:10px; font-weight:800; margin-bottom:6px; }
+  .subhead { color:var(--muted); margin:6px 0 0; font-size:13px; }
+  .top-actions { display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+  .pill { border:1px solid var(--line); background:#ffffff08; padding:10px 13px; border-radius:13px; font-size:12px; color:#e8e5ed; }
+  .btn { border:1px solid var(--line); background:#ffffff09; color:var(--text); border-radius:12px; padding:10px 14px; font-weight:700; font-size:12px; transition:transform .16s ease, background .16s ease, border-color .16s ease; }
+  .btn:hover { transform:translateY(-1px); background:#ffffff14; border-color:#ffffff29; }
+  .btn.primary { background:linear-gradient(135deg,#f4c56b,#ec9f68); color:#2b1d20; border:0; box-shadow:0 7px 22px #f4b96820; }
+  .btn.pink { border-color:#ff78bc55; background:#ff78bc16; }
+  .btn.small { padding:8px 10px; font-size:11px; }
+  .layout { display:grid; grid-template-columns:220px minmax(360px,1fr) 260px; gap:18px; align-items:stretch; }
+  .panel { background:linear-gradient(160deg,#1b1e2b,#171a26); border:1px solid var(--line); border-radius:20px; box-shadow:0 20px 50px #00000014; }
+  .sidebar { padding:17px; }
+  .panel-title { color:#c6cada; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1.7px; margin:3px 0 14px; }
+  .mode-list { display:grid; gap:7px; }
+  .mode-btn { display:flex; align-items:center; gap:11px; text-align:left; padding:12px 11px; width:100%; background:transparent; border:1px solid transparent; border-radius:12px; color:#b9bed0; font-size:12px; font-weight:700; }
+  .mode-btn .mode-icon { width:31px; height:31px; display:grid; place-items:center; border-radius:10px; background:#ffffff0a; font-size:16px; }
+  .mode-btn.active { color:#fff2dd; border-color:#f4c56b36; background:linear-gradient(90deg,#f4c56b19,#ffffff04); }
+  .mode-btn.active .mode-icon { background:#f4c56b22; }
+  .divider { height:1px; background:var(--line); margin:19px 0; }
+  .tip { border:1px solid #f4c56b2b; background:#f4c56b0c; border-radius:13px; padding:12px; color:#c6c3cf; font-size:11px; line-height:1.6; }
+  .tip strong { display:block; color:var(--gold); margin-bottom:4px; font-size:11px; }
+  .center-panel { min-width:0; padding:20px; overflow:hidden; }
+  .stage-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .stage-heading h2 { font-size:17px; margin:0; letter-spacing:-.3px; }
+  .stage-heading p { color:var(--muted); font-size:12px; margin:6px 0 0; }
+  .live-tag { color:#8ee0b1; border:1px solid #8ee0b130; background:#8ee0b10d; border-radius:999px; padding:6px 9px; white-space:nowrap; font-size:10px; font-weight:800; }
+  .arena-wrap { padding:20px 0 12px; display:grid; place-items:center; }
+  .arena { position:relative; width:min(100%,560px); aspect-ratio:1; border-radius:50%; isolation:isolate; }
+  .glow-back { position:absolute; inset:12%; border-radius:50%; background:radial-gradient(circle,#f1a84c20 0%,#db72b110 47%,transparent 72%); filter:blur(11px); }
+  .platform { position:absolute; inset:11%; border-radius:50%; background:radial-gradient(circle at 50% 30%,#42465d,#242738 49%,#151722 70%); border:2px solid #71614b; box-shadow:inset 0 0 0 8px #d6a45b12,inset 0 0 0 12px #080a1170,0 20px 35px #0009; }
+  .platform::before { content:""; position:absolute; inset:7%; border:1px dashed #eec7775c; border-radius:50%; }
+  .platform::after { content:"✦  ✧  ✦  ✧  ✦  ✧  ✦  ✧  ✦"; position:absolute; left:12%; right:12%; top:50%; transform:translateY(-50%); color:#f3c16e3d; text-align:center; letter-spacing:6px; font-size:12px; pointer-events:none; }
+  .inner-disc { position:absolute; inset:19%; border-radius:50%; border:1px solid #edc56e4a; background:radial-gradient(circle at 50% 40%,#34394d,#1c1e2d 73%); box-shadow:inset 0 0 26px #0008; }
+  .centerpiece { position:absolute; z-index:2; width:33%; height:39%; left:50%; top:49%; transform:translate(-50%,-50%); display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:48% 48% 36% 36%; background:linear-gradient(150deg,#6b3c69,#29233c 73%); border:2px solid #eac17b88; box-shadow:0 0 30px #e7a34a20, inset 0 0 20px #f1b95b1b; }
+  .centerpiece .crown { font-size:clamp(23px,4vw,42px); filter:drop-shadow(0 4px 5px #0008); line-height:1.1; }
+  .centerpiece .diya { font-size:clamp(36px,5.5vw,59px); line-height:1.12; filter:drop-shadow(0 0 10px #ffc65a55); }
+  .centerpiece .center-label { color:#eacda0; letter-spacing:1.5px; font-size:8px; font-weight:800; margin-top:5px; text-transform:uppercase; }
+  .flower-slot, .led { position:absolute; z-index:4; display:grid; place-items:center; transform:translate(-50%,-50%); border-radius:50%; }
+  .flower-slot { width:clamp(32px,6.5vw,54px); height:clamp(32px,6.5vw,54px); border:1px solid #f4c56b44; background:radial-gradient(circle,#49364a,#222432 70%); box-shadow:0 4px 10px #0007; font-size:clamp(19px,3.2vw,30px); transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+  .flower-slot:hover { transform:translate(-50%,-50%) scale(1.13); border-color:#f4c56b; box-shadow:0 0 18px #ffdc8a50; }
+  .flower-slot.empty { opacity:.72; border-style:dashed; color:#9993a9; font-size:19px; }
+  .flower-slot.filled { background:radial-gradient(circle,#574052,#2b2637); border-color:#edc36b99; }
+  .led { z-index:5; width:13px; height:13px; border:2px solid #222431; background:var(--led); box-shadow:0 0 7px var(--led),0 0 16px color-mix(in srgb,var(--led),transparent 45%); padding:0; transition:transform .12s, box-shadow .12s; }
+  .led:hover { transform:translate(-50%,-50%) scale(1.4); }
+  .led.lit { transform:translate(-50%,-50%) scale(1.75); box-shadow:0 0 10px var(--led),0 0 25px var(--led),0 0 36px var(--led); }
+  .led.disabled { cursor:default; }
+  .center-prompt { margin-top:-2px; text-align:center; color:#bfc1d1; font-size:11px; min-height:18px; }
+  .center-prompt strong { color:#f7d998; }
+  .stage-footer { display:flex; justify-content:space-between; gap:12px; align-items:center; border-top:1px solid var(--line); padding-top:15px; margin-top:10px; }
+  .stage-footer p { margin:0; color:var(--muted); font-size:11px; }
+  .stage-actions { display:flex; gap:7px; flex-wrap:wrap; }
+  .right-panel { padding:17px; display:flex; flex-direction:column; gap:18px; }
+  .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+  .stat { background:#ffffff06; border:1px solid var(--line); border-radius:13px; padding:12px; }
+  .stat .stat-label { color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-size:9px; font-weight:800; }
+  .stat .stat-value { font-size:23px; font-weight:800; margin-top:6px; letter-spacing:-.6px; }
+  .stat .stat-small { color:#8f96ac; font-size:10px; margin-top:3px; }
+  .section-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:11px; }
+  .section-head h3 { margin:0; font-size:12px; }
+  .section-head span { color:var(--muted); font-size:10px; }
+  .flower-palette { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+  .flower-pick { min-height:54px; border:1px solid var(--line); background:#ffffff06; border-radius:11px; color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:22px; }
+  .flower-pick small { font-size:9px; color:#b0b5c7; }
+  .flower-pick.selected { border-color:#f4c56b; background:#f4c56b17; box-shadow:inset 0 0 0 1px #f4c56b2a; }
+  .color-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .color-pick { width:28px; height:28px; border:2px solid #ffffff24; border-radius:50%; background:var(--swatch); box-shadow:0 0 13px color-mix(in srgb,var(--swatch),transparent 70%); }
+  .color-pick.selected { outline:2px solid #fff; outline-offset:3px; }
+  .progress-track { height:6px; border-radius:999px; background:#ffffff10; overflow:hidden; margin:10px 0 7px; }
+  .progress-fill { height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg,#e9a1cb,#f6cb72); transition:width .25s; }
+  .quest-task { display:flex; gap:9px; align-items:flex-start; color:#c3c7d6; font-size:11px; line-height:1.45; margin:9px 0; }
+  .check { width:16px; height:16px; flex:0 0 16px; border:1px solid #ffffff37; border-radius:50%; display:grid; place-items:center; font-size:9px; color:#15221c; margin-top:1px; }
+  .quest-task.done .check { background:#8ee0b1; border-color:#8ee0b1; }
+  .quest-task.done { color:#8ee0b1; }
+  .status-line { color:#a6adc2; font-size:10px; line-height:1.5; }
+  .toast { position:fixed; left:50%; bottom:24px; transform:translate(-50%,20px); background:#f7d995; color:#291c22; padding:12px 18px; border-radius:12px; font-weight:800; font-size:12px; box-shadow:0 10px 35px #0008; opacity:0; pointer-events:none; z-index:100; transition:opacity .2s,transform .2s; }
+  .toast.show { opacity:1; transform:translate(-50%,0); }
+  .pulse { animation:pulse 0.85s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { box-shadow:0 0 12px #ffbd5866; } 50% { box-shadow:0 0 32px #ffbd58; } }
+  .bloom { animation:bloom .35s cubic-bezier(.2,1.5,.5,1); }
+  @keyframes bloom { from { transform:translate(-50%,-50%) scale(.2); } to { transform:translate(-50%,-50%) scale(1); } }
+  .shake { animation:shake .25s linear; }
+  @keyframes shake { 25% { transform:translateX(-4px); } 50% { transform:translateX(4px); } 75% { transform:translateX(-2px); } }
+  .hidden { display:none !important; }
+  .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+  @media (max-width:1100px) { .layout { grid-template-columns:190px minmax(320px,1fr); } .right-panel { grid-column:1 / -1; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:start; } .right-panel .divider { display:none; } }
+  @media (max-width:700px) { .app { padding:14px; } .topbar { align-items:flex-start; flex-direction:column; } .layout { grid-template-columns:1fr; } .sidebar { padding:12px; } .mode-list { grid-template-columns:repeat(2,minmax(0,1fr)); } .mode-btn { padding:8px; } .mode-btn .mode-icon { width:28px;height:28px; } .tip { display:none; } .center-panel { padding:13px; } .right-panel { grid-column:auto; display:flex; } .arena-wrap { padding:12px 0 6px; } .stage-footer { align-items:flex-start; flex-direction:column; } .centerpiece .center-label { font-size:6px; } .led { width:11px;height:11px; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">🌸</div>
+      <div><div class="eyebrow">A little light. A lot of wonder.</div><h1>Flower Light Festival</h1><p class="subhead">Arrange flowers · Play with light · Celebrate color</p></div>
+    </div>
+    <div class="top-actions">
+      <div class="pill">✦ <span id="topLevel">Level 1</span></div>
+      <button class="btn" id="soundBtn" aria-pressed="false">🔈 Sound: Off</button>
+      <button class="btn" id="musicBtn" aria-pressed="false">♫ Music: Off</button>
+      <button class="btn primary" id="saveBtn">Save design ↗</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="panel sidebar">
+      <div class="panel-title">Choose your journey</div>
+      <nav class="mode-list" aria-label="Game modes">
+        <button class="mode-btn active" data-mode="creative"><span class="mode-icon">🌷</span><span>Creative Studio</span></button>
+        <button class="mode-btn" data-mode="light"><span class="mode-icon">💡</span><span>Light Challenge</span></button>
+        <button class="mode-btn" data-mode="rhythm"><span class="mode-icon">🎵</span><span>Rhythm Garden</span></button>
+        <button class="mode-btn" data-mode="quest"><span class="mode-icon">🏵️</span><span>Festival Quest</span></button>
+      </nav>
+      <div class="divider"></div>
+      <div class="panel-title">How to play</div>
+      <div class="tip" id="modeTip"><strong>✦ Your creative space</strong>Pick a flower, then tap any empty spot on the circular platform to place it. Choose a light color to change the LEDs.</div>
+      <div class="divider"></div>
+      <div class="status-line">This is a browser game prototype. Lights and sound are simulated; no physical electronics are connected.</div>
+    </aside>
+
+    <section class="panel center-panel">
+      <div class="stage-heading">
+        <div><h2 id="modeTitle">Your flower stage</h2><p id="modeSubtitle">Make a festival decoration that feels like you.</p></div>
+        <span class="live-tag" id="modeTag">✦ CREATIVE MODE</span>
+      </div>
+      <div class="arena-wrap">
+        <div class="arena" id="arena" aria-label="Interactive flower and light platform">
+          <div class="glow-back"></div>
+          <div class="platform"></div>
+          <div class="inner-disc"></div>
+          <div class="centerpiece"><div class="crown">👑</div><div class="diya">🪔</div><div class="center-label">Festival of lights</div></div>
+          <div id="flowerSlots"></div>
+          <div id="leds"></div>
+        </div>
+      </div>
+      <div class="center-prompt" id="gameMessage" aria-live="polite">Choose a flower from the collection to get started.</div>
+      <div class="stage-footer">
+        <p id="stageHint">Tip: Fill the 12 flower spaces to complete your wreath.</p>
+        <div class="stage-actions">
+          <button class="btn small" id="clearBtn">↺ Reset stage</button>
+          <button class="btn small pink" id="actionBtn">✨ Start challenge</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel right-panel">
+      <section>
+        <div class="panel-title">Your festival stats</div>
+        <div class="stat-grid">
+          <div class="stat"><div class="stat-label">Score</div><div class="stat-value" id="score">0</div><div class="stat-small">petals collected</div></div>
+          <div class="stat"><div class="stat-label">Flowers</div><div class="stat-value" id="flowerCount">0<span style="font-size:12px;color:#8f96ac"> / 12</span></div><div class="stat-small">on your stage</div></div>
+        </div>
+      </section>
+      <section>
+        <div class="section-head"><h3>Flower collection</h3><span>Choose one</span></div>
+        <div class="flower-palette" id="flowerPalette">
+          <button class="flower-pick selected" data-flower="🌼"><span>🌼</span><small>Marigold</small></button>
+          <button class="flower-pick" data-flower="🌸"><span>🌸</span><small>Cherry</small></button>
+          <button class="flower-pick" data-flower="🌺"><span>🌺</span><small>Hibiscus</small></button>
+          <button class="flower-pick" data-flower="🌻"><span>🌻</span><small>Sunflower</small></button>
+          <button class="flower-pick" data-flower="🌷"><span>🌷</span><small>Tulip</small></button>
+          <button class="flower-pick" data-flower="💮"><span>💮</span><small>Jasmine</small></button>
+        </div>
+        <div style="display:flex;gap:7px;margin-top:8px"><button class="btn small" id="eraseBtn" style="flex:1">⌫ Eraser</button><button class="btn small" id="randomBtn" style="flex:1">✧ Surprise me</button></div>
+      </section>
+      <section>
+        <div class="section-head"><h3>LED color</h3><span id="colorName">Golden glow</span></div>
+        <div class="color-row" id="colorPalette">
+          <button class="color-pick selected" data-color="#ffbd58" data-name="Golden glow" style="--swatch:#ffbd58" aria-label="Golden glow"></button>
+          <button class="color-pick" data-color="#ff6fae" data-name="Rose pink" style="--swatch:#ff6fae" aria-label="Rose pink"></button>
+          <button class="color-pick" data-color="#66d9ff" data-name="Ocean blue" style="--swatch:#66d9ff" aria-label="Ocean blue"></button>
+          <button class="color-pick" data-color="#8fe8a5" data-name="Mint green" style="--swatch:#8fe8a5" aria-label="Mint green"></button>
+          <button class="color-pick" data-color="#bd8cff" data-name="Violet dream" style="--swatch:#bd8cff" aria-label="Violet dream"></button>
+          <button class="color-pick" data-color="#fff2d0" data-name="Pearl white" style="--swatch:#fff2d0" aria-label="Pearl white"></button>
+        </div>
+      </section>
+      <section id="questSection" class="hidden">
+        <div class="section-head"><h3>Festival quest</h3><span id="questProgressText">0 / 3</span></div>
+        <div class="quest-task" id="taskFlowers"><span class="check"></span><span>Place at least 6 flowers</span></div>
+        <div class="quest-task" id="taskColor"><span class="check"></span><span>Choose a special LED color</span></div>
+        <div class="quest-task" id="taskSave"><span class="check"></span><span>Save your festival design</span></div>
+        <div class="progress-track"><div class="progress-fill" id="questProgress"></div></div>
+        <button class="btn primary" id="claimBtn" style="width:100%;margin-top:6px" disabled>Claim festival reward</button>
+      </section>
+      <section>
+        <div class="section-head"><h3>Progress to next level</h3><span id="xpText">0 / 100 XP</span></div>
+        <div class="progress-track"><div class="progress-fill" id="xpProgress"></div></div>
+        <div class="status-line" id="progressMessage">Create, play, and earn points to level up.</div>
+      </section>
+    </aside>
+  </main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(() => {
+  const FLOWER_COUNT = 12;
+  const flowers = ['🌼','🌸','🌺','🌻','🌷','💮'];
+  const state = {
+    mode: 'creative', selectedFlower: '🌼', erase: false,
+    selectedColor: '#ffbd58', colorName: 'Golden glow', colorsChanged: false,
+    slots: Array(FLOWER_COUNT).fill(''), score: 0, level: 1, xp: 0,
+    sound: false, musicOn: false, musicTimer: null, saved: false, questRewarded: false,
+    lightSequence: [], playerSequence: [], sequenceLocked: false, challengeLevel: 1,
+    rhythmTimer: null, rhythmOrigin: 0, rhythmStreak: 0, rhythmStarted: false,
+  };
+  const $ = (id) => document.getElementById(id);
+  const arena = $('arena');
+  let audioContext = null;
+  let toastTimer;
+
+  function sound(frequency=600, duration=.09, type='sine', force=false) {
+    if (!state.sound && !force) return;
+    try {
+      audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioContext.state === 'suspended') audioContext.resume();
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.type = type; osc.frequency.value = frequency;
+      gain.gain.setValueAtTime(.0001, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(.09, audioContext.currentTime + .015);
+      gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration);
+      osc.connect(gain); gain.connect(audioContext.destination); osc.start(); osc.stop(audioContext.currentTime + duration + .02);
+    } catch (_) { /* Audio is optional; game still works without it. */ }
+  }
+  function stopRhythm() { if (state.rhythmTimer) clearInterval(state.rhythmTimer); state.rhythmTimer = null; state.rhythmStarted = false; arena.classList.remove('pulse'); }
+  function stopMusic() { if (state.musicTimer) clearInterval(state.musicTimer); state.musicTimer = null; }
+  function notify(message) {
+    const el = $('toast'); el.textContent = message; el.classList.add('show'); clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2100);
+  }
+  function message(text) { $('gameMessage').textContent = text; }
+  function award(points, xp=points) {
+    state.score += points; state.xp += xp;
+    while (state.xp >= 100) { state.xp -= 100; state.level += 1; notify('Level up! You reached level ' + state.level + ' 🌟'); }
+    updateStats();
+  }
+  function updateStats() {
+    $('score').textContent = state.score.toLocaleString();
+    $('flowerCount').innerHTML = `${state.slots.filter(Boolean).length}<span style="font-size:12px;color:#8f96ac"> / 12</span>`;
+    $('topLevel').textContent = 'Level ' + state.level;
+    $('xpText').textContent = `${state.xp} / 100 XP`;
+    $('xpProgress').style.width = state.xp + '%';
+    $('progressMessage').textContent = state.xp >= 75 ? 'You are close to your next level!' : 'Create, play, and earn points to level up.';
+    updateQuest();
+  }
+  function makeRoundPositions(container, count, radius, className, contentFn) {
+    container.innerHTML = '';
+    for (let i=0; i<count; i++) {
+      const angle = (-90 + i * 360 / count) * Math.PI / 180;
+      const x = 50 + Math.cos(angle) * radius;
+      const y = 50 + Math.sin(angle) * radius;
+      const el = document.createElement('button');
+      el.type = 'button'; el.className = className;
+      el.style.left = x + '%'; el.style.top = y + '%';
+      el.dataset.index = i;
+      contentFn(el, i);
+      container.appendChild(el);
+    }
+  }
+  function renderStage() {
+    makeRoundPositions($('flowerSlots'), FLOWER_COUNT, 34, 'flower-slot', (el,i) => {
+      const flower = state.slots[i]; el.textContent = flower || '＋';
+      el.classList.toggle('empty', !flower); el.classList.toggle('filled', !!flower);
+      el.setAttribute('aria-label', flower ? `Flower space ${i+1}: ${flower}` : `Empty flower space ${i+1}`);
+      el.title = state.mode === 'creative' || state.mode === 'quest' ? 'Tap to place a flower' : `Flower space ${i+1}`;
+      el.addEventListener('click', () => onSlotClick(i, el));
+      el.addEventListener('contextmenu', ev => { ev.preventDefault(); state.slots[i] = ''; renderStage(); updateStats(); });
+    });
+    makeRoundPositions($('leds'), FLOWER_COUNT, 45, 'led', (el,i) => {
+      el.style.setProperty('--led', state.selectedColor);
+      el.setAttribute('aria-label', `LED ${i+1}`); el.title = `LED ${i+1}`;
+      el.classList.toggle('lit', false);
+      el.addEventListener('click', () => onLedClick(i, el));
+    });
+  }
+  function onSlotClick(index, el) {
+    if (state.mode === 'light' || state.mode === 'rhythm') { message('In this mode, use the glowing LEDs or the rhythm button.'); return; }
+    if (state.erase) {
+      if (state.slots[index]) { state.slots[index] = ''; sound(280); renderStage(); updateStats(); message('Flower removed. Make room for a new bloom.'); }
+      return;
+    }
+    const wasEmpty = !state.slots[index];
+    state.slots[index] = state.selectedFlower;
+    el.classList.remove('bloom'); void el.offsetWidth; el.classList.add('bloom');
+    sound(520 + index*22, .07, 'triangle');
+    if (wasEmpty) award(5, 5);
+    else { updateStats(); }
+    message('Beautiful! Your festival decoration is taking shape.');
+    updateQuest();
+    if (state.mode === 'quest' && state.slots.filter(Boolean).length >= 6) notify('Quest step complete: six flowers placed!');
+  }
+  function onLedClick(index, el) {
+    if (state.mode === 'light') { handleLightGuess(index, el); return; }
+    if (state.mode === 'rhythm') { rhythmTap(); return; }
+    el.classList.add('lit'); sound(350 + index*50, .1, 'sine');
+    setTimeout(() => el.classList.remove('lit'), 180);
+    message('LED tested! Try another color or switch to Light Challenge.');
+    award(1, 1);
+  }
+  function setMode(mode) {
+    stopRhythm();
+    state.mode = mode;
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+    const settings = {
+      creative: { title:'Your flower stage', subtitle:'Make a festival decoration that feels like you.', tag:'✦ CREATIVE MODE', tip:'Pick a flower, then tap any spot on the circular platform to place it. Choose a light color to change the LEDs.', hint:'Tip: Fill all 12 flower spaces to complete your wreath.', action:'✨ Start challenge' },
+      light: { title:'Follow the light', subtitle:'Watch the glowing sequence, then repeat it in the same order.', tag:'✧ LIGHT CHALLENGE', tip:'Press Start challenge. Memorize the LED sequence and tap the same lights in order. Each round adds one more light.', hint:'Tip: Watch carefully—each new round adds one LED.', action:'▶ Start challenge' },
+      rhythm: { title:'Rhythm garden', subtitle:'Catch the beat and tap when the ring glows.', tag:'♫ RHYTHM MODE', tip:'Press Start rhythm, then tap the central button or press Space when the stage pulse reaches its bright moment.', hint:'Tip: Consistent timing builds your streak.', action:'♫ Start rhythm' },
+      quest: { title:'The festival quest', subtitle:'Complete three little tasks to earn a festival reward.', tag:'🏵️ FESTIVAL QUEST', tip:'Place six flowers, select a special LED color, and save your design. Complete all three tasks to claim your reward.', hint:'Tip: Your quest progress updates as you decorate.', action:'✓ Check quest' }
+    };
+    const s = settings[mode];
+    $('modeTitle').textContent=s.title; $('modeSubtitle').textContent=s.subtitle; $('modeTag').textContent=s.tag;
+    $('modeTip').innerHTML='<strong>✦ '+s.title+'</strong>'+s.tip; $('stageHint').textContent=s.hint; $('actionBtn').textContent=s.action;
+    $('questSection').classList.toggle('hidden', mode !== 'quest');
+    if (mode === 'light') { state.lightSequence=[]; state.playerSequence=[]; state.sequenceLocked=false; $('leds').querySelectorAll('.led').forEach(el => el.classList.remove('lit')); message('Ready? Start a challenge round to see your first sequence.'); }
+    else if (mode === 'rhythm') message('Start rhythm, then tap when the platform gives a bright pulse.');
+    else if (mode === 'quest') { updateQuest(); message('Three tasks. One beautiful festival reward.'); }
+    else message('Choose a flower from the collection to get started.');
+  }
+  function startLightChallenge() {
+    stopRhythm(); state.mode='light'; state.lightSequence=[]; state.playerSequence=[]; state.challengeLevel=1;
+    $('leds').querySelectorAll('.led').forEach(el => el.classList.remove('lit'));
+    state.lightSequence.push(Math.floor(Math.random()*FLOWER_COUNT));
+    message('Watch the light sequence…'); showSequence();
+  }
+  function showSequence() {
+    state.sequenceLocked=true; state.playerSequence=[];
+    const leds = [...$('leds').querySelectorAll('.led')];
+    leds.forEach(el => el.classList.remove('lit'));
+    let i=0;
+    const run = () => {
+      if (i >= state.lightSequence.length) { state.sequenceLocked=false; message('Your turn! Repeat the sequence by tapping the LEDs.'); return; }
+      const led=leds[state.lightSequence[i]]; led.classList.add('lit'); sound(420 + state.lightSequence[i]*35, .14);
+      setTimeout(() => { led.classList.remove('lit'); i++; setTimeout(run, 180); }, 370);
+    };
+    setTimeout(run, 450);
+  }
+  function handleLightGuess(index, el) {
+    if (state.sequenceLocked || !state.lightSequence.length) { if (!state.lightSequence.length) message('Press Start challenge first.'); return; }
+    el.classList.add('lit'); sound(430 + index*35, .09); setTimeout(() => el.classList.remove('lit'), 230);
+    const pos=state.playerSequence.length;
+    if (state.lightSequence[pos] !== index) {
+      state.sequenceLocked=true; arena.classList.add('shake'); setTimeout(()=>arena.classList.remove('shake'),280);
+      message('Not quite! Tap Start challenge to try a fresh sequence.'); notify('Almost! Try another light sequence.');
+      state.lightSequence=[]; award(0,0); $('actionBtn').textContent='↻ Try again'; return;
+    }
+    state.playerSequence.push(index);
+    if (state.playerSequence.length === state.lightSequence.length) {
+      award(20 * state.challengeLevel, 20 * state.challengeLevel); state.challengeLevel++;
+      message('Perfect sequence! Next round is a little longer.'); notify('Sequence matched! +' + (20*(state.challengeLevel-1)) + ' points');
+      state.lightSequence.push(Math.floor(Math.random()*FLOWER_COUNT)); state.sequenceLocked=true; $('actionBtn').textContent='▶ Show next round';
+      setTimeout(showSequence, 650);
+    }
+  }
+  function startRhythm() {
+    stopRhythm(); state.mode='rhythm'; state.rhythmStarted=true; state.rhythmStreak=0; state.rhythmOrigin=performance.now()+900;
+    message('Get ready… tap when the stage flashes!');
+    const period=900;
+    state.rhythmTimer=setInterval(() => {
+      const elapsed=performance.now()-state.rhythmOrigin;
+      if (elapsed < 0) return;
+      const phase=elapsed%period;
+      arena.classList.toggle('pulse', phase < 240);
+    }, 35);
+    $('actionBtn').textContent='♫ Stop rhythm';
+    window.setTimeout(()=> { if (state.rhythmStarted) message('Tap the stage or press Space when it flashes.'); }, 850);
+  }
+  function rhythmTap() {
+    if (!state.rhythmStarted) { message('Press Start rhythm first.'); return; }
+    const period=900; const elapsed=performance.now()-state.rhythmOrigin;
+    if (elapsed < 0) { message('Wait for the first beat…'); return; }
+    const phase=elapsed%period; const delta=Math.min(Math.abs(phase-100), period-Math.abs(phase-100));
+    if (delta <= 230) {
+      state.rhythmStreak++; const pts=10+Math.min(state.rhythmStreak,10)*2;
+      award(pts, pts); sound(670 + Math.min(state.rhythmStreak,8)*25, .09, 'triangle');
+      message('Right on the beat! Streak: '+state.rhythmStreak+' ✨');
+      if (state.rhythmStreak % 5 === 0) notify('Amazing rhythm streak: '+state.rhythmStreak+'!');
+    } else {
+      state.rhythmStreak=0; sound(170,.1,'sawtooth'); message('A little off-beat—watch for the glow and try again.');
+    }
+  }
+  function updateQuest() {
+    const count=state.slots.filter(Boolean).length;
+    const tasks=[count>=6, state.colorsChanged, state.saved];
+    const ids=['taskFlowers','taskColor','taskSave'];
+    tasks.forEach((done,i)=> { const el=$(ids[i]); el.classList.toggle('done',done); el.querySelector('.check').textContent=done?'✓':''; });
+    const progress=tasks.filter(Boolean).length;
+    $('questProgressText').textContent=progress+' / 3'; $('questProgress').style.width=(progress/3*100)+'%';
+    $('claimBtn').disabled=progress<3 || state.questRewarded;
+    $('claimBtn').textContent=state.questRewarded?'Reward claimed ✓':'Claim festival reward';
+  }
+  function chooseFlower(flower) {
+    state.selectedFlower=flower; state.erase=false; $('eraseBtn').classList.remove('pink');
+    document.querySelectorAll('.flower-pick').forEach(btn=>btn.classList.toggle('selected',btn.dataset.flower===flower));
+    message('Selected '+flower+'. Now tap a flower space on the platform.');
+  }
+  function chooseColor(btn) {
+    state.selectedColor=btn.dataset.color; state.colorName=btn.dataset.name; state.colorsChanged=true;
+    document.documentElement.style.setProperty('--led',state.selectedColor);
+    $('colorName').textContent=state.colorName;
+    document.querySelectorAll('.color-pick').forEach(b=>b.classList.toggle('selected',b===btn));
+    $('leds').querySelectorAll('.led').forEach(el=>el.style.setProperty('--led',state.selectedColor));
+    message('LED color changed to '+state.colorName+'.'); sound(720,.1,'triangle'); updateQuest();
+  }
+  function saveDesign() {
+    const design={slots:state.slots,color:state.selectedColor,colorName:state.colorName,score:state.score,level:state.level,xp:state.xp};
+    try { localStorage.setItem('flowerLightFestivalSave',JSON.stringify(design)); state.saved=true; updateQuest(); notify('Your design has been saved in this browser!'); message('Design saved. Come back to your festival whenever you like.'); sound(760,.15); }
+    catch(e) { notify('Save is unavailable in this browser session.'); }
+  }
+  function loadDesign() {
+    try {
+      const raw=localStorage.getItem('flowerLightFestivalSave'); if (!raw) return;
+      const data=JSON.parse(raw); if (!Array.isArray(data.slots) || data.slots.length!==FLOWER_COUNT) return;
+      state.slots=data.slots; state.selectedColor=data.color || state.selectedColor; state.colorName=data.colorName || state.colorName;
+      state.score=Number(data.score)||0; state.level=Number(data.level)||1; state.xp=Number(data.xp)||0; state.saved=true;
+      const colBtn=[...document.querySelectorAll('.color-pick')].find(b=>b.dataset.color===state.selectedColor);
+      if(colBtn) { document.querySelectorAll('.color-pick').forEach(b=>b.classList.toggle('selected',b===colBtn)); }
+      $('colorName').textContent=state.colorName; renderStage(); updateStats();
+      message('Welcome back! Your saved festival design has been restored.');
+    } catch(_) { /* Ignore invalid local saves. */ }
+  }
+  function randomize() {
+    state.slots=state.slots.map(()=>Math.random()<.16?'':flowers[Math.floor(Math.random()*flowers.length)]);
+    renderStage(); updateStats(); award(5,5); message('A surprise flower pattern! Keep customizing it.'); notify('A fresh flower arrangement bloomed!');
+  }
+  function resetStage() {
+    state.slots=Array(FLOWER_COUNT).fill(''); state.colorsChanged=false; state.saved=false; state.questRewarded=false;
+    renderStage(); updateStats(); message('Fresh platform! Choose a flower and create something new.'); notify('Stage reset. Your score is safe.');
+  }
+  function actionButton() {
+    if (state.mode==='light') { if (state.sequenceLocked && state.lightSequence.length) { message('Watch the sequence, then repeat it on the LEDs.'); return; } if (!state.lightSequence.length) { startLightChallenge(); } else { showSequence(); } }
+    else if (state.mode==='rhythm') { if (state.rhythmStarted) { stopRhythm(); message('Rhythm stopped. Your score is saved for this session.'); $('actionBtn').textContent='♫ Start rhythm'; } else startRhythm(); }
+    else if (state.mode==='quest') { updateQuest(); const n=[state.slots.filter(Boolean).length>=6,state.colorsChanged,state.saved].filter(Boolean).length; message(n===3?'All tasks complete—claim your reward!':`Quest progress: ${n} of 3 tasks complete.`); if(n===3) notify('All quest tasks complete!'); }
+    else { setMode('light'); startLightChallenge(); }
+  }
+
+  document.querySelectorAll('.mode-btn').forEach(btn=>btn.addEventListener('click',()=>setMode(btn.dataset.mode)));
+  document.querySelectorAll('.flower-pick').forEach(btn=>btn.addEventListener('click',()=>chooseFlower(btn.dataset.flower)));
+  document.querySelectorAll('.color-pick').forEach(btn=>btn.addEventListener('click',()=>chooseColor(btn)));
+  $('soundBtn').addEventListener('click',()=> { state.sound=!state.sound; $('soundBtn').textContent=state.sound?'🔊 Sound: On':'🔈 Sound: Off'; $('soundBtn').setAttribute('aria-pressed',String(state.sound)); if(state.sound) sound(650,.11); });
+  $('musicBtn').addEventListener('click',()=> {
+    state.musicOn=!state.musicOn;
+    if(state.musicOn) {
+      const notes=[523,659,784,659,587,698,880,698,523,659,784,1046]; let step=0;
+      sound(notes[step],.22,'sine',true); step++;
+      state.musicTimer=setInterval(()=>{ if(state.musicOn) { sound(notes[step%notes.length],.22,'sine',true); step++; } },360);
+    } else { stopMusic(); }
+    $('musicBtn').textContent=state.musicOn?'♫ Music: On':'♫ Music: Off'; $('musicBtn').setAttribute('aria-pressed',String(state.musicOn));
+    if(state.musicOn) notify('Festival melody started.');
+  });
+  $('saveBtn').addEventListener('click',saveDesign);
+  $('clearBtn').addEventListener('click',resetStage);
+  $('randomBtn').addEventListener('click',randomize);
+  $('eraseBtn').addEventListener('click',()=> { state.erase=!state.erase; $('eraseBtn').classList.toggle('pink',state.erase); message(state.erase?'Eraser selected. Tap a flower to remove it.':'Flower selected. Tap a flower space to place it.'); });
+  $('actionBtn').addEventListener('click',actionButton);
+  $('claimBtn').addEventListener('click',()=> { if(state.questRewarded) return; const complete=state.slots.filter(Boolean).length>=6 && state.colorsChanged && state.saved; if(!complete) return; state.questRewarded=true; award(100,100); updateQuest(); notify('Festival reward unlocked: +100 points! 🏵️'); message('You completed the Festival Quest. Wonderful work!'); });
+  arena.addEventListener('click', e=> { if (e.target===arena || e.target.classList.contains('platform') || e.target.classList.contains('inner-disc') || e.target.closest('.centerpiece')) { if(state.mode==='rhythm') rhythmTap(); } });
+  document.addEventListener('keydown',e=> { if(e.code==='Space' && state.mode==='rhythm') { e.preventDefault(); rhythmTap(); } });
+  renderStage(); loadDesign(); updateStats();
+})();
+</script>
+</body>
+</html>
